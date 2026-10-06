@@ -11,6 +11,7 @@ import { RedisModule } from './redis/redis.module';
 import appConfig from './config/app.config';
 import jwtConfig from './config/jwt.config';
 import redisConfig from './config/redis.config';
+import databaseConfig from './config/database.config';
 import { envValidationSchema } from './config/env.validation';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -18,11 +19,12 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggerModule } from 'nestjs-pino';
 import { Request } from 'express';
+import { TypeOrmModule } from '@nestjs/typeorm';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // module nào cũng dùng được ConfigService
-      load: [appConfig, jwtConfig, redisConfig],
+      load: [appConfig, jwtConfig, redisConfig, databaseConfig],
       validationSchema: envValidationSchema,
       validationOptions: { abortEarly: false }, // báo hết mọi lỗi một lượt
     }),
@@ -64,6 +66,15 @@ import { Request } from 'express';
       inject: [ConfigService],
       useFactory: (cfg: ConfigService) => ({
         url: cfg.getOrThrow<string>('redis.url'),
+      }),
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (cfg: ConfigService) => ({
+        type: 'postgres',
+        url: cfg.getOrThrow<string>('database.url'),
+        autoLoadEntities: true,
+        synchronize: false, // KHÔNG BAO GIỜ true, để migration lo schema
       }),
     }),
   ],
