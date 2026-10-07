@@ -20,6 +20,8 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggerModule } from 'nestjs-pino';
 import { Request } from 'express';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -77,6 +79,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: false, // KHÔNG BAO GIỜ true, để migration lo schema
       }),
     }),
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
